@@ -13,17 +13,13 @@ export default function StoriesBar({ users }: StoriesBarProps) {
     const viewed = new Set<string>();
     users.forEach(userStory => {
       const allViewed = userStory.stories.every(story => hasViewedStory(story.id));
-      if (allViewed) {
-        viewed.add(userStory.user.id);
-      }
+      if (allViewed) viewed.add(userStory.user.id);
     });
     setViewedStories(viewed);
 
-    // Sort users: unviewed first, viewed at the end
     const sorted = [...users].sort((a, b) => {
       const aViewed = viewed.has(a.user.id);
       const bViewed = viewed.has(b.user.id);
-
       if (aViewed === bViewed) return 0;
       return aViewed ? 1 : -1;
     });
@@ -31,22 +27,31 @@ export default function StoriesBar({ users }: StoriesBarProps) {
     setSortedUsers(sorted);
   }, [users]);
 
+  // Check if there are no stories
+  const hasStories = sortedUsers.some(user => user.stories.length > 0);
+
+  if (!hasStories) {
+    return (
+      <div className="bg-white border border-instagram-border rounded-lg p-4 text-center text-instagram-secondary">
+        No stories available
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white border border-instagram-border rounded-lg p-4">
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
-        {sortedUsers.map((userStory) => {
+        {sortedUsers.map(userStory => {
           const isViewed = viewedStories.has(userStory.user.id);
-
           return (
             <Link
               key={userStory.user.id}
               href={`/stories/${userStory.user.id}`}
               className="flex-shrink-0 flex flex-col items-center gap-1 group"
             >
-              <div className={`p-[2px] rounded-full bg-gradient-to-tr ${isViewed
-                ? 'from-gray-300 to-gray-400'
-                : 'from-yellow-400 via-pink-500 to-purple-600'
-                }`}
+              <div
+                className={`p-[2px] rounded-full bg-gradient-to-tr ${isViewed ? 'from-gray-300 to-gray-400' : 'from-yellow-400 via-pink-500 to-purple-600'
+                  }`}
               >
                 <div className="bg-white p-[3px] rounded-full">
                   <img
@@ -56,7 +61,10 @@ export default function StoriesBar({ users }: StoriesBarProps) {
                   />
                 </div>
               </div>
-              <span className={`text-xs max-w-[64px] truncate ${isViewed ? 'text-instagram-secondary' : 'text-instagram-primary'}`}>
+              <span
+                className={`text-xs max-w-[64px] truncate ${isViewed ? 'text-instagram-secondary' : 'text-instagram-primary'
+                  }`}
+              >
                 {userStory.user.username}
               </span>
             </Link>
